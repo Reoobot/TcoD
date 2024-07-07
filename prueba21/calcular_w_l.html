@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de W y L</title>
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #results {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #results h2 {
+            color: #007bff;
+        }
+
+        #results p {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        #results span {
+            font-weight: bold;
+        }
+
+        .back-button {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-button a {
+            text-decoration: none;
+            padding: 10px 20px;
+            background-color: #ccc;
+            color: #333;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .back-button a:hover {
+            background-color: #bbb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculadora de W y L</h1>
+        <form id="calculatorForm">
+            <div class="input-group">
+                <label for="originalW">W original:</label>
+                <input type="number" id="originalW" name="originalW" required>
+            </div>
+            <div class="input-group">
+                <label for="percentW">Porcentaje para W (%):</label>
+                <input type="number" id="percentW" name="percentW" value="0">
+            </div>
+            <div class="input-group">
+                <label for="originalL">L original:</label>
+                <input type="number" id="originalL" name="originalL" required>
+            </div>
+            <div class="input-group">
+                <label for="percentL">Porcentaje para L (%):</label>
+                <input type="number" id="percentL" name="percentL" value="0">
+            </div>
+            <div class="input-group">
+                <button type="button" onclick="calculateNewValues()">Calcular</button>
+            </div>
+            <div class="back-button">
+                <a href="start.html">Regresar</a>
+            </div>
+        </form>
+        <div id="results">
+            <h2>Resultados</h2>
+            <p>W nuevo: <span id="newW"></span></p>
+            <p>L nuevo: <span id="newL"></span></p>
+        </div>
+    </div>
+
+    <script>
+        function calculateNewValues() {
+            var originalW = parseFloat(document.getElementById('originalW').value);
+            var percentW = parseFloat(document.getElementById('percentW').value);
+            var originalL = parseFloat(document.getElementById('originalL').value);
+            var percentL = parseFloat(document.getElementById('percentL').value);
+
+            var newW = originalW * (1 + percentW / 100);
+            var newL = originalL * (1 + percentL / 100);
+
+            document.getElementById('newW').textContent = newW.toFixed(2);
+            document.getElementById('newL').textContent = newL.toFixed(2);
+
+            document.getElementById('results').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!-- <!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resultados de las Configuraciones</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    button {
+      padding: 8px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #opcionesCalculo {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Resultados de las Configuraciones</h2>
+  
+  <div id="resultadosConfiguracion1"></div>
+  <div id="resultadosConfiguracion2"></div>
+  <div id="diferenciaVelocidad"></div>
+
+  <div id="opcionesCalculo"></div>
+
+  <button onclick="regresarAlIndice()">Regresar al Índice</button>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      let configuracion1 = JSON.parse(localStorage.getItem('configuracion1'));
+      let configuracion2 = JSON.parse(localStorage.getItem('configuracion2'));
+
+      if (configuracion1 && configuracion2) {
+        mostrarResultadosConfiguracion('resultadosConfiguracion1', configuracion1, 1);
+        mostrarResultadosConfiguracion('resultadosConfiguracion2', configuracion2, 2);
+
+        let diferencia = Math.abs(configuracion1.velocidadCalculada - configuracion2.velocidadCalculada);
+        document.getElementById('diferenciaVelocidad').innerHTML = `
+          <h3>Diferencia de Velocidad entre Configuraciones</h3>
+          <p>Diferencia entre Configuración 1 y Configuración 2: ${diferencia.toFixed(2)} km/h</p>
+        `;
+
+        // Calcular y mostrar opciones de W y L para la configuración 2
+        calcularOpcionesConfiguracion2(configuracion1, configuracion2);
+      } else {
+        alert('No se encontraron datos de configuraciones.');
+      }
+    });
+
+    function mostrarResultadosConfiguracion(idResultado, configuracion, numeroConfiguracion) {
+      if (numeroConfiguracion === 1) {
+        let margenError4 = 0.04;
+        let wMinima4 = configuracion.w * (1 - margenError4);
+        let wMaxima4 = configuracion.w * (1 + margenError4);
+        let lMinima4 = configuracion.l * (1 - margenError4);
+        let lMaxima4 = configuracion.l * (1 + margenError4);
+
+        let resultadosElement = document.getElementById(idResultado);
+        resultadosElement.innerHTML = `
+          <h3>Resultados de la Configuración ${numeroConfiguracion}</h3>
+          <p>W: ${configuracion.w.toFixed(2)} (max +4%: ${wMaxima4.toFixed(2)} / min -4%: ${wMinima4.toFixed(2)})</p>
+          <p>L: ${configuracion.l.toFixed(2)} (max +4%: ${lMaxima4.toFixed(2)} / min -4%: ${lMinima4.toFixed(2)})</p>
+        `;
+      } else {
+        let margenError2 = 0.02;
+        let velocidadMinima2 = configuracion.velocidadObjetivo * (1 - margenError2);
+        let velocidadMaxima2 = configuracion.velocidadObjetivo * (1 + margenError2);
+
+        let resultadosElement = document.getElementById(idResultado);
+        resultadosElement.innerHTML = `
+          <h3>Resultados de la Configuración ${numeroConfiguracion}</h3>
+          <p>W: ${configuracion.w.toFixed(2)}</p>
+          <p>L: ${configuracion.l.toFixed(2)}</p>
+          <p>Velocidad Objetivo: ${configuracion.velocidadObjetivo} km/h</p>
+          <p>Profundidad del dibujo: ${configuracion.profundidadDibujo} mm</p>
+          <p>Medida del neumático: ${configuracion.ancho} / ${configuracion.aspecto} R${configuracion.diametro.toFixed(2)}</p>
+          <p>Velocidad Calculada: ${parseFloat(configuracion.velocidadCalculada).toFixed(2)} km/h</p>
+          <p>Margen de error del ±2%: ${velocidadMinima2.toFixed(2)} - ${velocidadMaxima2.toFixed(2)} km/h</p>
+        `;
+      }
+    }
+
+    function calcularOpcionesConfiguracion2(configuracion1, configuracion2) {
+      // Calcular el factor de corrección basado en la profundidad del dibujo
+      let factorCorreccion2 = calcularFactorCorreccion(configuracion2.profundidadDibujo);
+
+      // Calcular nuevos valores de W y L para alcanzar la velocidad deseada de 90 km/h
+      let nuevoW = calcularNuevoW(configuracion2.w, configuracion2.velocidadCalculada, 90);
+      let nuevoL = calcularNuevoL(configuracion2.l, configuracion2.velocidadCalculada, 90);
+
+      // Aplicar margen de error del ±4% a los nuevos valores de W y L
+      let margenError4 = 0.04;
+      let wMinimo = configuracion2.w * (1 - margenError4);
+      let wMaximo = configuracion2.w * (1 + margenError4);
+      let lMinimo = configuracion2.l * (1 - margenError4);
+      let lMaximo = configuracion2.l * (1 + margenError4);
+
+      // Ajustar los nuevos valores para que estén dentro del margen de error del ±4%
+      if (nuevoW < wMinimo) {
+        nuevoW = wMinimo;
+      } else if (nuevoW > wMaximo) {
+        nuevoW = wMaximo;
+      }
+      if (nuevoL < lMinimo) {
+        nuevoL = lMinimo;
+      } else if (nuevoL > lMaximo) {
+        nuevoL = lMaximo;
+      }
+
+      let opcionesCalculo = document.getElementById('opcionesCalculo');
+      opcionesCalculo.innerHTML = `
+        <h3>Opciones de Cálculo para Configuración 2</h3>
+        <p>Para ajustar la velocidad a 90 km/h, use los siguientes valores:</p>
+        <p>Nuevo W: ${nuevoW.toFixed(2)}</p>
+        <p>Nuevo L: ${nuevoL.toFixed(2)}</p>
+        <p>Profundidad del dibujo: ${configuracion2.profundidadDibujo} mm</p>
+        <p>Medida del neumático: ${configuracion2.ancho} / ${configuracion2.aspecto} R${configuracion2.diametro.toFixed(2)}</p>
+        <p>Velocidad deseada: 90 km/h</p>
+      `;
+    }
+
+    function calcularFactorCorreccion(profundidadDibujo) {
+      let profundidadReferencia = 14;
+      let factor = profundidadDibujo / profundidadReferencia;
+      return factor;
+    }
+
+    function calcularNuevoW(wActual, velocidadActual, velocidadDeseada) {
+      return wActual * (velocidadDeseada / velocidadActual);
+    }
+
+    function calcularNuevoL(lActual, velocidadActual, velocidadDeseada) {
+      return lActual * (velocidadDeseada / velocidadActual);
+    }
+
+    function regresarAlIndice() {
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ajuste de Configuración</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    button {
+      padding: 8px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .input-container {
+      margin-bottom: 10px;
+    }
+    .input-container label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .input-container input {
+      padding: 5px;
+      width: 100px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Ajuste de Configuración</h2>
+  
+  <div id="resultadosConfiguracion1"></div>
+  <div id="resultadosConfiguracion2"></div>
+  <div id="diferenciaVelocidad"></div>
+
+  <div id="opcionesAjuste">
+    <h3>Ajuste de W y L</h3>
+    <div class="input-container">
+      <label for="ajusteW">Ajuste W (%)</label>
+      <input type="number" id="ajusteW" value="0" min="-4" max="4">
+    </div>
+    <div class="input-container">
+      <label for="ajusteL">Ajuste L (%)</label>
+      <input type="number" id="ajusteL" value="0" min="-4" max="4">
+    </div>
+    <div>
+      <button onclick="aplicarAjustes()">Aplicar Ajustes</button>
+      <button onclick="limpiarAjustes()">Limpiar Ajustes</button>
+    </div>
+  </div>
+
+  <button onclick="regresarAlIndice()">Regresar al Índice</button>
+
+  <script>
+    let configuracion1 = JSON.parse(localStorage.getItem('configuracion1'));
+    let configuracion2 = JSON.parse(localStorage.getItem('configuracion2'));
+
+    document.addEventListener("DOMContentLoaded", function() {
+      if (configuracion1 && configuracion2) {
+        mostrarResultadosConfiguracion('resultadosConfiguracion1', configuracion1, 1);
+        mostrarResultadosConfiguracion('resultadosConfiguracion2', configuracion2, 2);
+
+        let diferencia = Math.abs(configuracion1.velocidadCalculada - configuracion2.velocidadCalculada);
+        document.getElementById('diferenciaVelocidad').innerHTML = `
+          <h3>Diferencia de Velocidad entre Configuraciones</h3>
+          <p>Diferencia entre Configuración 1 y Configuración 2: ${diferencia.toFixed(2)} km/h</p>
+        `;
+      } else {
+        alert('No se encontraron datos de configuraciones.');
+      }
+    });
+
+    function mostrarResultadosConfiguracion(idResultado, configuracion, numeroConfiguracion) {
+      if (numeroConfiguracion === 1) {
+        let margenError4 = 0.04;
+        let wMinima4 = configuracion.w * (1 - margenError4);
+        let wMaxima4 = configuracion.w * (1 + margenError4);
+        let lMinima4 = configuracion.l * (1 - margenError4);
+        let lMaxima4 = configuracion.l * (1 + margenError4);
+
+        let resultadosElement = document.getElementById(idResultado);
+        resultadosElement.innerHTML = `
+          <h3>Resultados de la Configuración ${numeroConfiguracion}</h3>
+          <p>W: ${configuracion.w.toFixed(2)} (max +4%: ${wMaxima4.toFixed(2)} / min -4%: ${wMinima4.toFixed(2)})</p>
+          <p>L: ${configuracion.l.toFixed(2)} (max +4%: ${lMaxima4.toFixed(2)} / min -4%: ${lMinima4.toFixed(2)})</p>
+        `;
+      } else {
+        let margenError2 = 0.02;
+        let velocidadMinima2 = configuracion.velocidadObjetivo * (1 - margenError2);
+        let velocidadMaxima2 = configuracion.velocidadObjetivo * (1 + margenError2);
+
+        let resultadosElement = document.getElementById(idResultado);
+        resultadosElement.innerHTML = `
+          <h3>Resultados de la Configuración ${numeroConfiguracion}</h3>
+          <p>W: ${configuracion.w.toFixed(2)}</p>
+          <p>L: ${configuracion.l.toFixed(2)}</p>
+          <p>Velocidad Objetivo: ${configuracion.velocidadObjetivo} km/h</p>
+          <p>Profundidad del dibujo: ${configuracion.profundidadDibujo} mm</p>
+          <p>Medida del neumático: ${configuracion.ancho} / ${configuracion.aspecto} R${configuracion.diametro.toFixed(2)}</p>
+          <p>Velocidad Calculada: ${parseFloat(configuracion.velocidadCalculada).toFixed(2)} km/h</p>
+          <p>Margen de error del ±2%: ${velocidadMinima2.toFixed(2)} - ${velocidadMaxima2.toFixed(2)} km/h</p>
+        `;
+      }
+    }
+
+    function aplicarAjustes() {
+      let ajustePorcentajeW = parseInt(document.getElementById('ajusteW').value);
+      let ajustePorcentajeL = parseInt(document.getElementById('ajusteL').value);
+
+      let nuevoW = configuracion2.w * (1 + ajustePorcentajeW / 100);
+      let nuevoL = configuracion2.l * (1 + ajustePorcentajeL / 100);
+
+      // Validar que los nuevos valores estén dentro de los límites permitidos
+      let margenError4 = 0.04;
+      let wMinimo = configuracion2.w * (1 - margenError4);
+      let wMaximo = configuracion2.w * (1 + margenError4);
+      if (nuevoW < wMinimo) {
+        nuevoW = wMinimo;
+      } else if (nuevoW > wMaximo) {
+        nuevoW = wMaximo;
+      }
+
+      let lMinimo = configuracion2.l * (1 - margenError4);
+      let lMaximo = configuracion2.l * (1 + margenError4);
+      if (nuevoL < lMinimo) {
+        nuevoL = lMinimo;
+      } else if (nuevoL > lMaximo) {
+        nuevoL = lMaximo;
+      }
+
+      // Almacenar los nuevos valores en localStorage para la página siguiente
+      localStorage.setItem('nuevoW', nuevoW.toFixed(2));
+      localStorage.setItem('nuevoL', nuevoL.toFixed(2));
+
+      // Redirigir a la página de cálculo de velocidad propuesta
+      window.location.href = "calculo_velocidad.html";
+    }
+
+    function limpiarAjustes() {
+      document.getElementById('ajusteW').value = "0";
+      document.getElementById('ajusteL').value = "0";
+    }
+
+    function regresarAlIndice() {
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>

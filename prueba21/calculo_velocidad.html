@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Velocidad Propuesta</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    button {
+      padding: 8px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <h2>Velocidad Propuesta</h2>
+
+  <div id="opcionesCalculo">
+    <h3>Opciones de Cálculo para Configuración 2</h3>
+    <p>Nuevo W: <span id="nuevoW"></span></p>
+    <p>Nuevo L: <span id="nuevoL"></span></p>
+    <p>Profundidad del dibujo: <span id="profundidadDibujo"></span> mm</p>
+    <p>Medida del neumático: <span id="medidaNeumatico"></span></p>
+    <p>Velocidad deseada: 90 km/h</p>
+    <p>Margen de error del ±2%: <span id="velocidadPropuesta"></span></p>
+    <p>Velocidad Actual: <span id="velocidadActual"></span> km/h</p>
+    <button onclick="calcularDeNuevo()">Calcular de Nuevo</button>
+  </div>
+
+  <button onclick="regresarAlIndice()">Regresar al Índice</button>
+
+  <script>
+    let configuracion2 = JSON.parse(localStorage.getItem('configuracion2'));
+    let nuevoW = localStorage.getItem('nuevoW');
+    let nuevoL = localStorage.getItem('nuevoL');
+
+    document.addEventListener("DOMContentLoaded", function() {
+      if (configuracion2 && nuevoW && nuevoL) {
+        document.getElementById('nuevoW').textContent = nuevoW;
+        document.getElementById('nuevoL').textContent = nuevoL;
+        document.getElementById('profundidadDibujo').textContent = configuracion2.profundidadDibujo;
+        document.getElementById('medidaNeumatico').textContent = `${configuracion2.ancho} / ${configuracion2.aspecto} R${configuracion2.diametro.toFixed(2)}`;
+
+        // Calcular velocidad propuesta con el margen de error del ±2%
+        let velocidadDeseada = 90;
+        let velocidadCalculada = parseFloat(configuracion2.velocidadCalculada);
+        let velocidadMinima = velocidadDeseada * (1 - 0.02);
+        let velocidadMaxima = velocidadDeseada * (1 + 0.02);
+
+        document.getElementById('velocidadPropuesta').textContent = `${velocidadMinima.toFixed(2)} - ${velocidadMaxima.toFixed(2)} km/h`;
+
+        // Calculamos la velocidad actual basada en la velocidad calculada (simulada aquí)
+        let velocidadActual = calcularVelocidadActual(velocidadDeseada, velocidadCalculada);
+        document.getElementById('velocidadActual').textContent = velocidadActual.toFixed(2);
+      } else {
+        alert('No se encontraron datos necesarios para el cálculo.');
+      }
+    });
+
+    function calcularVelocidadActual(velocidadDeseada, velocidadCalculada) {
+      // Aquí puedes implementar la lógica real para calcular la velocidad actual basada en la velocidad calculada
+      // En este ejemplo, simplemente se retorna la velocidad calculada (simulada)
+      return velocidadCalculada;
+    }
+
+    function calcularDeNuevo() {
+      window.location.href = "resultados.html";
+    }
+
+    function regresarAlIndice() {
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
